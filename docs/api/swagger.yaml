@@ -1,0 +1,316 @@
+openapi: 3.0.0
+info:
+  version: '1.0.0'
+  title: Why Not Change Your Clothes?
+  description: 'An API for retrieving info related to building laundry rooms and machines from laundryview.com/RPI'
+  contact:
+    email: jcolekaplan@gmail.com
+  license:
+    name: MIT
+    url: 'https://github.com/jcolekaplan/WNCYC/blob/master/LICENSE'
+
+paths:
+  '/buildings':
+    get:
+      summary: Returns an array of all buildings
+      responses:
+        '200':
+          description: A JSON array of all buildings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/buildings'
+        '400':
+          description: Building ID not recognized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Building not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  '/buildings/{buildingId}':
+    get:
+      summary: Returns a specific building with matching ID
+      parameters:
+      - name: buildingId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Found building with matching ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/buildings'
+        '400':
+          description: Building ID not recognized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Building not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+
+  '/buildings?friendlyName=Hotel Barton':
+    get: 
+      summary: Filters out buildings that do not contain friendly name in their name list and returns array of buildings that match
+      parameters:
+      - name: friendlyName
+        in: query
+        schema:
+          type: string
+      responses:
+        '200':
+          description: A JSON array of matching buildings
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                    $ref: '#/components/schemas/buildings'
+        '400':
+          description: Friendly name not recognized as properly formatted name
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: Building not found
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  
+  '/buildings/{buildingId}/machines?machineType=washer&isAvailable=true':
+    get:
+      summary: Filters out machines that do not match type requested and not available to returns an array of available machines
+      parameters:
+      - name: buildingId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: machineType
+        in: query
+        schema:
+          type: string
+      - name: isAvailable
+        in: query
+        schema:
+          type: boolean
+      responses:
+        '200':
+          description: A JSON array of available arrays
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                    $ref: '#/components/schemas/machines'
+        '400':
+          description: Search query not recognized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: No machines available of that type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+  
+  '/buidlings/{buildingId}/machines':
+    get:
+      summary: Returns an array of all machines in a building
+      parameters:
+      - name: buildingId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: A JSON array of machines in a building
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/machines'
+        '400':
+          description: Search query not recognized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: No machines available of that type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+                  
+  '/buildings/{buildingId}/machines/{machineId}':
+    get: 
+      summary: Returns a specific machine with matching ID
+      parameters:
+      - name: buildingId
+        in: path
+        required: true
+        schema:
+          type: string
+      - name: machineId
+        in: path
+        required: true
+        schema:
+          type: string
+      responses:
+        '200':
+          description: Found machine with matching ID
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/machines'
+        '400':
+          description: Search query not recognized
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        '404':
+          description: No machines available of that type
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+        default:
+          description: Unexpected error
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/error'
+    
+components:
+  schemas:
+    buildings:
+      type: object
+      required:
+        - status
+        - id
+        - nameList
+        - numWashers
+        - numDryers
+      properties:
+        status:
+          type: string
+          example: "success"
+        id:
+          type: string
+          example: "Barton Hall-2 Floor"
+        nameList:
+          type: array
+          items:
+            type: string          
+          example: ["Barton", "Barton Hall", "Hotel Barton", "Casa del Barton", "Chez Barton"]
+        numWashers:
+          type: integer
+          format: int32
+          example: 3
+        numDryers:
+          type: integer
+          format: int32
+          example: 2
+    
+    machines:
+      type: object
+      required:
+        - status
+        - id
+        - buildingId
+        - machineType
+        - isAvailable
+        - timeLeft
+      properties:
+        status:
+          type: string
+          example: "success"
+        id:
+          type: string
+          example: "Barton Hall-2 Floor Dryer-12"
+        buildingId:
+          type: string
+          example: "Barton Hall-2"
+        machineType:
+          type: string
+          example: "dryer"
+        isAvailable:
+          type: boolean
+          example: false
+        timeLeft:
+          type: integer
+          format: int32
+          example: 55
+        
+    error:
+      type: object
+      required:
+        - status
+        - message
+        - code
+      properties:
+        status:
+          type: string
+          example: "Error"
+        message:
+          type: string
+          example: "Not found"
+        code:
+          type: integer
+          format: int32
+          minimum: 200
+          maximum: 600
+          example: 404
