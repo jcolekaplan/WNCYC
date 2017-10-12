@@ -76,7 +76,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
 
-  '/buildings?friendlyName=Hotel Barton':
+  '/buildings?friendlyName={friendlyName}':
     get: 
       summary: Filters out buildings that do not contain friendly name in their name list and returns array of buildings that match
       parameters:
@@ -112,7 +112,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/error'
   
-  '/buildings/{buildingId}/machines?machineType=washer&isAvailable=true':
+  '/buildings/{buildingId}/machines?machineType={machineType}&isAvailable={isAvailable}':
     get:
       summary: Filters out machines that do not match type requested and not available to returns an array of available machines
       parameters:
