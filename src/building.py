@@ -26,11 +26,11 @@ class Building(object):
 		Check if all the attributes are valid and assigns them if they are
 		Raises ValueError if attributes are invalid
 		"""
-		allowed_status = ["success", "failure"]
-		if status not in allowed_status:
+		allowedStatuses = ["success", "failure"]
+		if status not in allowedStatuses:
 			raise ValueError(
 					"Invalid value for 'status' ({0}), must be one of {1}"
-					.format(status, allowed_status))
+					.format(status, allowedStatuses))
 		
 		if buildingId is None:
 			raise ValueError("Invalid value for 'buildingId', must not be 'None'")
