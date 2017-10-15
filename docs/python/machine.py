@@ -4,8 +4,8 @@ class Machine(object):
 	'attribute name': 'attribute type'
 	swagger_types = {
 		'status': 'str',
-		'id': 'str',
-		'buildingID': 'str',
+		'machineId': 'str',
+		'buildingId': 'str',
 		'machineType': 'str',
 		'timeLeft': 'int',
 		'isAvailable': 'bool'
@@ -14,14 +14,14 @@ class Machine(object):
 	'attribute name': 'attribute name in Swagger Doc'
 	attribute_map = {
 		'status': 'status',
-		'id': 'id',
-		'buildingID': 'buildingID',
+		'machineId': 'machineId',
+		'buildingId': 'buildingId',
 		'machineType': 'machineType',
 		'timeLeft': 'timeLeft',
 		'isAvailable': 'isAvailable'
 	}
 	"""
-	def __init__(self, status, ID, buildingID, machineType, timeLeft, isAvailable):
+	def __init__(self, status, machineId, buildingId, machineType, timeLeft, isAvailable):
 		"""Class instantiation
 		
 		Check if all the attributes are valid and assigns them if they are
@@ -33,11 +33,11 @@ class Machine(object):
 					"Invalid value for 'status' ({0}), must be one of {1}"
 					.format(status, allowed_status))
 		
-		if ID is None:
-			raise ValueError("Invalid value for 'ID', must not be 'None'")
+		if machineId is None:
+			raise ValueError("Invalid value for 'machineId', must not be 'None'")
 			
-		if buildingID is None:
-			raise ValueError("Invalid value for 'buildingID', must not be 'None'")
+		if buildingId is None:
+			raise ValueError("Invalid value for 'buildingId', must not be 'None'")
 			
 		allowed_machineType = ["washer", "dryer"]
 		if machineType not in allowed_machineType:
@@ -49,33 +49,8 @@ class Machine(object):
 			raiseValueError("Invalid value for 'timeLeft', must not be 'None'")
 		
 		self.status = status
-		self.ID = ID
-		self.buildingID = buildingID
+		self.machineId = machineId
+		self.buildingId = buildingId
 		self.machineType = machineType
 		self.timeLeft = timeLeft
 		self.isAvailable = (timeLeft == 0)
-		
-	def status(self):
-		"""Returns machine request status ("success" or "failure")"""
-		return self.status
-	
-	def ID(self):
-		"""Returns machine ID (i.e. "Barton Hall-2 Floor Dryer-12")"""
-		return self.ID
-	
-	def buildingID(self):
-		"""Returns ID of bulding machine is in (i.e. "Barton Hall-2 Floor")"""
-		return self.buildingID
-	
-	def machineType(self):
-		"""Returns machine type ("washer" or "dryer")"""
-		return self.machineType
-	
-	def timeLeft(self):
-		"""Returns time left in machine cycle"""
-		return self.timeLeft
-	
-	def isAvailable(self):
-		"""Returns machine availability (true or false)"""
-		return self.isAvailable
-	
