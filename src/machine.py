@@ -27,11 +27,11 @@ class Machine(object):
 		Check if all the attributes are valid and assigns them if they are
 		Raises ValueError if attributes are invalid
 		"""
-		allowed_status = ["success", "failure"]
-		if status not in allowed_status:
+		allowedStatuses = ["success", "failure"]
+		if status not in allowedStatuses:
 			raise ValueError(
 					"Invalid value for 'status' ({0}), must be one of {1}"
-					.format(status, allowed_status))
+					.format(status, allowedStatuses))
 		
 		if machineId is None:
 			raise ValueError("Invalid value for 'machineId', must not be 'None'")
@@ -39,14 +39,14 @@ class Machine(object):
 		if buildingId is None:
 			raise ValueError("Invalid value for 'buildingId', must not be 'None'")
 			
-		allowed_machineType = ["washer", "dryer"]
-		if machineType not in allowed_machineType:
+		allowedMachineTypes = ["washer", "dryer"]
+		if machineType not in allowedMachineTypes:
 			raise ValueError(
 					"Invalid value for 'machineType' ({0}), must be one of {1}"
-					.format(machineType, allowed_machineType))
+					.format(machineType, allowedMachineTypes))
 		
 		if timeLeft is None:
-			raiseValueError("Invalid value for 'timeLeft', must not be 'None'")
+			raise ValueError("Invalid value for 'timeLeft', must not be 'None'")
 		
 		self.status = status
 		self.machineId = machineId
