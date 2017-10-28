@@ -3,7 +3,6 @@ class Building(object):
 	
 	'attribute name': 'type'
 	swagger_types = {
-		'status': 'str',
 		'buildingId': 'str',
 		'nameList': 'list[str]',
 		'numWashers': 'int',
@@ -12,7 +11,6 @@ class Building(object):
 	
 	'attribute name': 'Attribute name in Swagger Docs'
 	attribute_map = {
-		'status': 'status',
 		'buildingId': 'buildingId',
 		'nameList': 'nameList',
 		'numWashers': 'numWashers',
@@ -20,18 +18,12 @@ class Building(object):
 	}
 	"""
 	
-	def __init__(self, status, buildingId, nameList, numWashers, numDryers):
+	def __init__(self, buildingId, nameList, numWashers, numDryers):
 		"""Class instatiation
 		
 		Check if all the attributes are valid and assigns them if they are
 		Raises ValueError if attributes are invalid
-		"""
-		allowedStatuses = ["success", "failure"]
-		if status not in allowedStatuses:
-			raise ValueError(
-					"Invalid value for 'status' ({0}), must be one of {1}"
-					.format(status, allowedStatuses))
-		
+		"""		
 		if buildingId is None:
 			raise ValueError("Invalid value for 'buildingId', must not be 'None'")
 		
@@ -44,7 +36,6 @@ class Building(object):
 		if numDryers is None:
 			raise ValueError("Invalid value for 'numDryers', must not be'None'")
 		
-		self.status = status
 		self.buildingId = buildingId
 		self.nameList = nameList
 		self.numWashers = numWashers
