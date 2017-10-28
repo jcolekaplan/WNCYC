@@ -67,7 +67,7 @@ for buildingInfo in buildingsInfo:
 	"""
 	numWashers = sum(p.machineType == 'Washer' for p in machineDict[buildingId])
 	numDryers = sum(p.machineType == 'Dryer' for p in machineDict[buildingId])
-	buildingList.append(Building('success', buildingId, buildingInfo['friendlyNames'], numWashers, numDryers))
+	buildingList.append(Building(buildingId, buildingInfo['friendlyNames'], numWashers, numDryers))
 
 """Test"""
 for building in buildingList:
