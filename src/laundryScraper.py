@@ -1,13 +1,9 @@
-import json
 import boto3
 import urllib3
-import configparser
-from bs4 import BeautifulSoup
-
-"""Include building and machine classes"""
 from machine import *
 from building import *
 from buildingsInfo import *
+from bs4 import BeautifulSoup
 
 """Convert all building and machine info to format compatible with DynamoDB tables"""
 def dictToItem(raw):
@@ -46,7 +42,12 @@ def dictToItem(raw):
    Put all the info into Building and Machine objects
    Put all those objects into buildingList and machineDict
 """   
-def scrapeLaundry():
+def scrapeLaundry(event, context):
+	
+	"""Used to store Building and Machine objects with all the relevant info"""
+	buildingList = list()
+	machineDict = dict()
+
 	"""Read in the LaundryView page for building then use BeautifulSoup to convert it into a parsable object"""
 	http = urllib3.PoolManager()
 	url = 'http://classic.laundryview.com/classic_laundry_room_ajax.php?lr={}'
@@ -91,6 +92,8 @@ def scrapeLaundry():
 				runTime = row.find('div', 'runtime').get_text().strip()
 				if runTime.find('remaining') != -1:
 					runTimeInt = [int(s) for s in runTime.split() if s.isdigit()][0]
+				elif runTime.find('out of service') != -1:
+					runTimeInt = -1
 				else:
 					runTimeInt = 0
 					
@@ -105,16 +108,17 @@ def scrapeLaundry():
 		numWashers = sum(p.machineType == 'Washer' for p in machineDict[buildingId])
 		numDryers = sum(p.machineType == 'Dryer' for p in machineDict[buildingId])
 		buildingList.append(Building(buildingId, buildingInfo['friendlyNames'], numWashers, numDryers))
-
+	
+	"""Call writeDynamo to re-format buildingList and machineDict and write to Dynamo table"""
+	writeDynamo(buildingList, machineDict)
+	
 """Iterate through buildingList and machineDict
    Convert to dynamo format and write info to table
 """
-def writeDynamo():
+def writeDynamo(buildingList, machineDict):
 	"""Client with access keys to write to Dynamo tables online"""
-	dynamodb = boto3.client('dynamodb',
-		  aws_access_key_id = AWS_ACCESS_KEY_ID,
-		  aws_secret_access_key = AWS_SECRET_ACCESS_KEY,
-		  region_name = 'us-east-2')
+	dynamodb = boto3.client('dynamodb', region_name = 'us-east-2')
+	
 	"""Go through each building, convert it to dictionary, and put in relevant info in    
 	   Dynamo format
 	   Go through the machines for each of those buildings, do the same
@@ -144,9 +148,4 @@ def writeDynamo():
 
 if __name__ == '__main__':
 	
-	"""Used to store Building and Machine objects with all the relevant info"""
-	buildingList = list()
-	machineDict = dict()
-
-	scrapeLaundry()
-	writeDynamo()
+	scrapeLaundry(None,None)
