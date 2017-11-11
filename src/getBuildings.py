@@ -3,6 +3,11 @@ import boto3
 import decimal
 from buildingsInfo import *
 
+"""Scan dynamo table"""
+dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
+buildingTable = dynamodb.Table('Buildings')
+response = buildingTable.scan()
+
 """Workaround for formatting issue
    Source: http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.Python.04.html
 """
@@ -21,17 +26,15 @@ class DecimalEncoder(json.JSONEncoder):
    or 'Building not found' error if friendlyName not in any list
 """
 def getBuildings(event, context):
-    """Scan dynamo table"""
-    dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
-    buildingTable = dynamodb.Table('Buildings')
-    response = buildingTable.scan()
-    
     """If friendlyName specified, assign it to variable,
        iterate through all the items in scanned dynamo table until finding it
        put it in JSON format and return
     """
+    friendlyName = None
     if event.get('queryStringParameters'):
         friendlyName = event.get('queryStringParameters').get('friendlyName')
+		
+    if friendlyName:
         for building in response['Items']:
             if friendlyName in building['nameList']:
                 return {
@@ -39,14 +42,13 @@ def getBuildings(event, context):
                     'headers': {'Content-Type': 'application/json'},
                     'body': json.dumps(building, cls=DecimalEncoder)
                 }
-        
         """Error if not found"""
         return {
             'statusCode': 404,
             'headers': {'Content-Type': 'application/json'},
             'body': 'Building not found'
         }
-    
+
     else:
         return {
             'statusCode': 200, 
