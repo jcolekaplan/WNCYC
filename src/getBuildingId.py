@@ -12,7 +12,7 @@ buildingTable = dynamodb.Table('Buildings')
 """
 def getBuildingId(event, context):
     """If buildingId specified, assign it to variable,
-	   use query to find it in building table
+       use get_item to find it in building table
        put it in JSON format and return
     """
     buildingId = None
@@ -36,5 +36,5 @@ def getBuildingId(event, context):
     return {
     'statusCode': 404,
     'headers': {'Content-Type': 'application/json'},
-    'body': 'Path not found'
+    'body': json.dumps({'error': 'Path not found'})
     }
