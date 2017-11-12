@@ -1,24 +1,10 @@
-import json
 import boto3
-import decimal
-from buildingsInfo import *
+from decEncoder import *
 
 """Scan dynamo table"""
 dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
 buildingTable = dynamodb.Table('Buildings')
 response = buildingTable.scan()
-
-"""Workaround for formatting issue
-   Source: http://docs.aws.amazon.com/amazondynamodb/latest/developerguide/GettingStarted.Python.04.html
-"""
-class DecimalEncoder(json.JSONEncoder):
-    def default(self, o):
-        if isinstance(o, decimal.Decimal):
-            if o % 1 > 0:
-                return float(o)
-            else:
-                return int(o)
-        return super(DecimalEncoder, self).default(o)
 
 """Lambda handler function for /buildings API call
    Returns all the buildings if no friendlyName specified
