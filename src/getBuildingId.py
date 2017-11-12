@@ -34,7 +34,7 @@ def getBuildingId(event, context):
             }
     """Error if path not specified"""
     return {
-    'statusCode': 404,
-    'headers': {'Content-Type': 'application/json'},
-    'body': json.dumps({'error': 'Path not found'})
+       'statusCode': 404,
+       'headers': {'Content-Type': 'application/json'},
+       'body': json.dumps({'error': 'Path not found'})
     }
