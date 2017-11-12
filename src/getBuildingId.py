@@ -8,7 +8,7 @@ buildingTable = dynamodb.Table('Buildings')
 
 """Lambda handler function for /buildings/{buildingId} API call
    Returns building with the buildingId specified in the path
-   or 'Building not found' error if buildingId not found by query search
+   or 'Building not found' error if buildingId not found
 """
 def getBuildingId(event, context):
     """If buildingId specified, assign it to variable,
