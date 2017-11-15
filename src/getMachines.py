@@ -42,5 +42,4 @@ def getMachines(event, context):
             'statusCode': 400,
             'headers': {'Content-Type': 'application/json'},
             'body': json.dumps({'error': 'No path parameters'})
-
         }
