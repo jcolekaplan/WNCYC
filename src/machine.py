@@ -8,7 +8,6 @@ class Machine(object):
 		'buildingId': 'str',
 		'machineType': 'str',
 		'timeLeft': 'int',
-		'isAvailable': 'bool'
 	}
 	
 	'attribute name': 'attribute name in Swagger Doc'
@@ -18,10 +17,9 @@ class Machine(object):
 		'buildingId': 'buildingId',
 		'machineType': 'machineType',
 		'timeLeft': 'timeLeft',
-		'isAvailable': 'isAvailable'
 	}
 	"""
-	def __init__(self, status, machineId, buildingId, machineType, timeLeft, isAvailable):
+	def __init__(self, status, machineId, buildingId, machineType, timeLeft):
 		"""Class instantiation
 		
 		Check if all the attributes are valid and assigns them if they are
@@ -36,7 +34,7 @@ class Machine(object):
 		if buildingId is None:
 			raise ValueError("Invalid value for 'buildingId', must not be 'None'")
 			
-		allowedMachineTypes = ["Washer", "Dryer"]
+		allowedMachineTypes = ["washer", "dryer"]
 		if machineType not in allowedMachineTypes:
 			raise ValueError(
 					"Invalid value for 'machineType' ({0}), must be one of {1}"
@@ -45,9 +43,12 @@ class Machine(object):
 		if timeLeft is None:
 			raise ValueError("Invalid value for 'timeLeft', must not be 'None'")
 		
-		self.status = status
+		if status.find('cycle') != -1:
+			self.status = 'available'
+		else:
+			self.status = status
+			
 		self.machineId = machineId
 		self.buildingId = buildingId
 		self.machineType = machineType
 		self.timeLeft = timeLeft
-		self.isAvailable = (timeLeft == 0)
