@@ -32,14 +32,14 @@ def getMachineId(event, context):
                 return {
                     'statusCode': 404,
                     'headers': {'Content-Type': 'application/json'},
-                    'body': json.dumps({'error': 'Building not found'})
+                    'body': json.dumps({'error': 'Machine not found in that building'})
                 }
         else:
             """Error if not found"""
             return {
                 'statusCode': 404,
                 'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps({'error': 'Machine not found in that building'})
+                'body': json.dumps({'error': 'Machine not found'})
             }
     else:
         """No path parameters"""
