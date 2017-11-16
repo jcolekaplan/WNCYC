@@ -13,7 +13,6 @@ machineTable = dynamodb.Table('Machines')
    or 'No path parameters' if there are no path parameters
 """
 def getMachines(event, context):
-    buildingId = None
     if event.get('pathParameters'):
         buildingId = event.get('pathParameters').get('buildingId')
         filterExpression=Attr('buildingId').eq(buildingId)
@@ -33,7 +32,7 @@ def getMachines(event, context):
             }
         else:
             return {
-                'statusCode': 200,
+                'statusCode': 404,
                 'headers': {'Content-Type': 'application/json'},
                 'body': json.dumps({'error': 'Building or machines not found'})
             }
