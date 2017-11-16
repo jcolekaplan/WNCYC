@@ -1,9 +1,11 @@
 import boto3
 import urllib3
+from bs4 import BeautifulSoup
+
+"""Include building and machine classes"""
 from machine import *
 from building import *
 from buildingsInfo import *
-from bs4 import BeautifulSoup
 
 """Convert all building and machine info to format compatible with DynamoDB tables"""
 def dictToItem(raw):
@@ -26,7 +28,6 @@ def dictToItem(raw):
 				resp[k] = {'L': []}
 				for i in v:
 					resp[k]['L'].append(dictToItem(i))
-		
 		return resp
 
 	elif type(raw) is str:
@@ -84,9 +85,9 @@ def scrapeLaundry(event, context):
 			if row.find(alt={'inuse','available'}):
 				machineType = row.find(alt={'inuse', 'available'})
 				if str(machineType).find('washer') != -1:
-					machineType = 'Washer'
+					machineType = 'washer'
 				else:
-					machineType = 'Dryer'
+					machineType = 'dryer'
 					
 			if row.find('div', 'runtime'):
 				runTime = row.find('div', 'runtime').get_text().strip()
@@ -100,13 +101,13 @@ def scrapeLaundry(event, context):
 				machineId = buildingId + '-' + machineType + '-' + machineNum		
 				if machineId not in foundMachines:
 					foundMachines.add(machineId)
-					machineDict[buildingId].append((Machine(runTime, machineId, buildingId, machineType, runTimeInt, True)))
+					machineDict[buildingId].append((Machine(runTime, machineId, buildingId, machineType, runTimeInt)))
 		
 		"""Using data found above, create Building object
 		   Store in buildingList
 		"""
-		numWashers = sum(p.machineType == 'Washer' for p in machineDict[buildingId])
-		numDryers = sum(p.machineType == 'Dryer' for p in machineDict[buildingId])
+		numWashers = sum(p.machineType == 'washer' for p in machineDict[buildingId])
+		numDryers = sum(p.machineType == 'dryer' for p in machineDict[buildingId])
 		buildingList.append(Building(buildingId, buildingInfo['friendlyNames'], numWashers, numDryers))
 	
 	"""Call writeDynamo to re-format buildingList and machineDict and write to Dynamo table"""
