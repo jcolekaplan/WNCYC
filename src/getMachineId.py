@@ -26,7 +26,7 @@ def getMachineId(event, context):
                 return {
                     'statusCode': 200,
                     'headers': {'Content-Type': 'application/json'},
-                    'body': json.dumps(response['Item'], cls=DecimalEncoder)
+                    'body': json.dumps(response.get('Item'), cls=DecimalEncoder)
                 }
             else:
                 return {
