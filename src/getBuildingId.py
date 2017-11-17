@@ -37,4 +37,4 @@ def getBuildingId(event, context):
             'statusCode': 400,
             'headers': {'Content-Type': 'application/json'},
             'body': json.dumps({'error': 'Path not found'})
-	    }
+        }
