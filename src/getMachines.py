@@ -28,7 +28,7 @@ def getMachines(event, context):
             return {
                 'statusCode': 200,
                 'headers': {'Content-Type': 'application/json'},
-                'body': json.dumps(response['Items'], cls=DecimalEncoder)
+                'body': json.dumps(response.get('Items'), cls=DecimalEncoder)
             }
         else:
             return {
