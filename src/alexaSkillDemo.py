@@ -1,3 +1,39 @@
+import json
+import boto3
+import urllib3
+
+"""Convert all building and machine info to format compatible with DynamoDB tables"""
+def dictToItem(raw):
+	if type(raw) is dict:
+		resp = {}
+		for k,v in raw.items():
+			if type(v) is str:
+				resp[k] = {
+				        'S': v
+				}
+			elif type(v) is int:
+				resp[k] = {
+				    'N': str(v)
+				}
+			elif type(v) is dict:
+				resp[k] = {
+				    'N': dictToItem(v)
+				}
+			elif type(v) is list:
+				resp[k] = {'L': []}
+				for i in v:
+					resp[k]['L'].append(dictToItem(i))
+		return resp
+
+	elif type(raw) is str:
+		return {
+		        'S': raw
+		}
+	elif type(raw) is int:
+		return {
+		        'N': str(raw)
+		}
+        
 """ --------------- Helpers that build all of the responses ---------------------- """
 def buildSpeechletResponse(title, output, repromptText, shouldEndSession):
     return {
@@ -67,6 +103,22 @@ def setBuildingInSession(intent, session):
         speechOutput = 'I now know your building is ' + building.capitalize() + '. ' \
                        'You can ask me what your building is by saying, what is my building?'
         repromptText = 'You can ask me what your building is by saying, what is my building?'
+        
+        """Calls /buildings?friendlyName= API Call to find valid buildingId"""
+        findBuilding = callApi(
+            "https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings?friendlyName={}".format(building)
+        )
+        
+        if findBuilding.get('buildingId'):
+            user = dict()
+            user['userId'] = session.get('user').get('userId')
+            user['buildingId'] = findBuilding.get('buildingId')
+            writeDynamo(user)
+        else:
+            speechOutput = 'I could not find that building. Please try again.'\
+                           'You can tell me your building by saying, my building is.'
+            repromptText = 'You can tell me your building by saying, my building is.'
+        
     else:
         speechOutput = 'I am not sure what your building is. Please try again.'
         repromptText = 'I am not sure what your building is. Please try again.' \
@@ -136,8 +188,30 @@ def onSessionEnded(sessionEndedRequest, session):
     print('onSessionEnded requestId=' + sessionEndedRequest.get('requestId') +
           ', sessionId=' + session.get('sessionId'))
 
-""" --------------- Main handler ------------------ """
+""" --------------- Get info from API ------------- """
+def callApi(url):
+       http = urllib3.PoolManager()
+       r = http.request('GET', url)
+       data = r.data
+       jsonData = json.loads(data)
+       return jsonData
+       
+""" --------------- Write to dynamo table --------- """
+def writeDynamo(userInfo):
+    """Client with access keys to write to Dynamo tables online"""
+    dynamodb = boto3.client('dynamodb', region_name = 'us-east-2')
+    
+    newItem = dict()
+    newItem['PutRequest'] = dict()
+    newItem['PutRequest']['Item'] = dictToItem(userInfo)
 
+    userTable = dict()
+    userTable['Users'] = list()
+    userTable['Users'].append(newItem)
+    
+    userResponse = dynamodb.batch_write_item(RequestItems=userTable)
+    
+""" --------------- Main handler ------------------ """
 def lambdaHandler(event, context):
     """ Route the incoming request based on type (LaunchRequest, IntentRequest,
         etc.) The JSON body of the request is provided in the event parameter.
