@@ -9,7 +9,9 @@ def createBuildingAttributes(building):
     return {'building': building}
 
 def setBuildingInSession(intent, session):
-    """ Sets the building in the session and prepares the speech to reply to the user."""
+    """ Sets the building in the session and prepares the speech to reply to the user.
+        Writes user ID to User table
+    """
     cardTitle = intent.get('name')
     sessionAttributes = {}
     shouldEndSession = False
@@ -21,25 +23,28 @@ def setBuildingInSession(intent, session):
                        'You can ask me what your building is by saying, what is my building?'
         repromptText = 'You can ask me what your building is by saying, what is my building?'
         
-        """Calls /buildings?friendlyName= API Call to find valid buildingId"""
+        """Calls API /buildings?friendlyName=building to find valid buildingId"""
         findBuilding = callApi(
-            "https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings?friendlyName={}".format(building)
+            "https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings?friendlyName={}".format(building).replace(' ', '%20')
         )
-        
         if findBuilding.get('buildingId'):
             userInfo = {
                 'userId' : session.get('user').get('userId'),
-                'buildingId' : findBuilding.get('buildingId')
+                'buildingId' : findBuilding.get('buildingId'),
+                'buildingName': building
             }
             table.put_item(Item=userInfo)
         else:
-            speechOutput = 'I could not find that building. Please try again.'\
+            """Not a valid building"""
+            speechOutput = 'I could not find that building. Please try again. '\
                            'You can tell me your building by saying, my building is.'
-            repromptText = 'You can tell me your building by saying, my building is.'
-        
+            repromptText = 'You can tell me your building by saying, my building is.'    
+
     else:
+        """Building not found in session"""
         speechOutput = 'I am not sure what your building is. Please try again.'
         repromptText = 'I am not sure what your building is. Please try again.' \
                        'You can tell me your building by saying, my building is.'
+                       
     return buildResponse(sessionAttributes, buildSpeechletResponse(
         cardTitle, speechOutput, repromptText, shouldEndSession))

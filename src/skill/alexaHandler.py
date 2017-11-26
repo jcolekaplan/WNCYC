@@ -1,5 +1,10 @@
 """Intents"""
 from setBuildingIntent import *
+from getBuildingIntent import *
+from getAvailMachinesIntent import *
+from isMachineAvailIntent import *
+from setMachineTimerIntent import *
+from setNextAvailMachineTimerIntent import *
 from getWelcomeResponseIntent import *
 from handleSessionEndRequestIntent import *
 
@@ -27,13 +32,21 @@ def onIntent(intentRequest, session):
     intentName = intentRequest.get('intent').get('name')
 
     """ Dispatch to skill's intent handlers """
-    if intentName == 'MyBuildingIsIntent':
+    if intentName == 'setBuilding':
         return setBuildingInSession(intent, session)
-    elif intentName == 'WhatsMyBuildingIntent':
+    elif intentName == 'getBuilding':
         return getBuildingFromSession(intent, session)
+    elif intentName == 'getAvailMachines':
+        return getAvailMachines(intent, session)
+    elif intentName == 'isMachineAvail':
+        return isMachineAvail(intent, session)
+    elif intentName == 'setMachineTimer':
+        return setMachineTimer(intent, session)
+    elif intentName == 'setNextAvailMachineTimer':
+        return setNextAvailMachineTimer(intent, session)
     elif intentName == 'AMAZON.HelpIntent':
         return getWelcomeResponse()
-    elif intentName == 'AMAZON.CancelIntent' or intent_name == 'AMAZON.StopIntent':
+    elif intentName == 'AMAZON.CancelIntent' or intentName == 'AMAZON.StopIntent':
         return handleSessionEndRequest()
     else:
         raise ValueError('Invalid intent')

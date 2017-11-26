@@ -34,5 +34,6 @@ def callApi(url):
        http = urllib3.PoolManager()
        r = http.request('GET', url)
        data = r.data
+       print(url)
        jsonData = json.loads(data)
        return jsonData
