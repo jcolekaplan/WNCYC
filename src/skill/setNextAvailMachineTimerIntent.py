@@ -23,21 +23,20 @@ def setNextAvailMachineTimer(intent, session):
         
         if response.get('Item'):
             buildingId = response.get('Item').get('buildingId')
-            machineType = intent.get('slots').get('machineType').get('value')
-            
-            """Allow for user to use plurals when interacting with Alexa"""
-            if machineType=='washers': 
-                machineType = 'washer'
-            elif machineType == 'dryers':
-                machineType = 'dryer'
+            machineType = intent.get('slots').get('machineType').get('value').strip('s')
             
             """Call API /buidlings/buildingId/machines?machineType=machineType&status=available"""
             machineInfo = callApi(
-                url = 'https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings/{}/machines?machineType={}'
+                url = 'https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings/{}/machines?status=available&machineType={}'
                 .format(buildingId, machineType)
             )
-            if machineInfo != {'error': 'Building or machines not found'}:
-                numAvailMachines = len(machineInfo)
+            
+            """Get number of available machines
+               If it's non-zero, tell user how many there are
+               If not, offer to set time for next available machine
+            """
+            numAvailMachines = len(machineInfo)
+            if numAvailMachines > 0:
                 speechOutput = 'There are {} available {}s in your building right now'.format(str(numAvailMachines), machineType)
                 repromptText = 'There are {} available {}s in your building right now'.format(str(numAvailMachines), machineType)
             else:
@@ -50,7 +49,7 @@ def setNextAvailMachineTimer(intent, session):
                 )
                 lowestTimeLeft = 60
                 for machine in machineInfo:
-                    if 0 < machine.get('timeLeft') <= 60:
+                    if 0 < machine.get('timeLeft') <= lowestTimeLeft:
                         lowestTimeLeft = machine.get('timeLeft')
                 speechOutput = 'Setting a timer for the next available {} ' \
                                'The next available {} will be free in {} minutes. '\
