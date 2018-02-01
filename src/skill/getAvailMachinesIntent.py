@@ -24,20 +24,15 @@ def getAvailMachines(intent, session):
         
         if response.get('Item'):
             buildingId = response.get('Item').get('buildingId')
-            machineType = intent.get('slots').get('machineType').get('value')
-            
-            """Allow for user to use plurals when interacting with Alexa"""
-            if machineType=='washers': 
-                machineType = 'washer'
-            elif machineType == 'dryers':
-                machineType = 'dryer'
+            machineType = intent.get('slots').get('machineType').get('value').strip('s')
             
             """API Call /buildings/buildingId/machines?=available&machineType=machineType"""
             machineInfo = callApi(
                 url = 'https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings/{}/machines?status=available&machineType={}'
                 .format(buildingId, machineType)
             )
-            if machineInfo != {'error': 'Building or machines not found'}:
+            """If machine exists"""
+            if type(machineInfo) == list:
                 numAvailMachines = len(machineInfo)
                 speechOutput = 'There are {} available {}s in your building right now'.format(str(numAvailMachines), machineType)
                 repromptText = 'There are {} available {}s in your building right now'.format(str(numAvailMachines), machineType)
