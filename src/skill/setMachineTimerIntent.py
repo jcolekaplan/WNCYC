@@ -27,17 +27,16 @@ def setMachineTimer(intent, session):
             machineNum = intent.get('slots').get('machineNum').get('value')
             
             """Format number"""
-            if int(machineNum) < 10:
-                machineId = buildingId + '-' + machineType + '-0' + machineNum
-            else:
-                machineId = buildingId + '-' + machineType + '-' + machineNum
+            machineId = buildingId + '-' + machineType + '-' + str(machineNum).zfill(2)
             
             """Call API /buildings/buildingId/machines/machineId"""
             machineInfo = callApi(
                 url = 'https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings/{}/machines/{}'
                 .format(buildingId, machineId)
             )
-            if machineInfo != {'error': 'Machine not found'}:
+            
+            """If machine exists"""
+            if type(machineInfo) == list:
                 status = machineInfo.get('status')
                 if status == 'available':
                     speechOutput = 'That {} is available.'.format(machineType)
