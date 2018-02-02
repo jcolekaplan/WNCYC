@@ -1,15 +1,12 @@
 import boto3
 import urllib3
-import smtplib
 
 from bs4 import BeautifulSoup
-from email.mime.text import MIMEText
 
 """Include building and machine classes"""
 from machine import *
 from building import *
 from buildingsInfo import *
-from machinesInfo import *
 
 """Scrape LaundryView for each building and all machines in each building
    Put all the info into Building and Machine objects
@@ -83,8 +80,6 @@ def scrapeLaundry(event, context):
             
                 machineId = buildingId + '-' + machineType + '-' + machineNum
                 if machineId not in foundMachines:
-                    #if machineId not in machinesInfo:
-                        #emailMe(machineId)
                     foundMachines.add(machineId)
                     machineDict[buildingId].append((Machine(runTime, machineId, buildingId, machineType, runTimeInt)))
 
