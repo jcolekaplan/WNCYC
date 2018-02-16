@@ -16,24 +16,16 @@ def getBuildingFromSession(intent, session):
     if session.get('user'):
         userId = session.get('user').get('userId')
         response = table.get_item(Key = {'userId': userId})
+        building = response.get('Item').get('buildingName')
         
+        """Tell user their building"""
         if response.get('Item'):
-            speechOutput = 'Your building is {}. '\
-                           'You can hear your building name again by saying, '\
-                           'what is my building?'.format(response.get('Item').get('buildingName'))
-            repromptText = 'You can hear your building name again by saying, what is my building?'
-            
+            speechOutput, repromptText = yourBuildingIs(building)
+        """Building not found"""
         else:
-            """No valid building for user in User table"""
-            speechOutput = 'I could not find your building.'\
-                           'You can tell me your building by saying, my building is.'
-            repromptText = 'You can tell me your building by saying, my building is.'
-    
+            speechOutput, repromptText = buildingNotFound()
     else:
-        """No user with that ID found in User table"""
-        speechOutput = 'I am sorry. I do not know what your building is.'\
-                       'You can tell me your building by saying, my building is.'
-        repromptText = 'You can tell me your building by saying, my building is.'
-
+        speechOutput, repromptText = userNotFound()
+        
     return buildResponse(sessionAttributes, buildSpeechletResponse(
         cardTitle, speechOutput, repromptText, shouldEndSession))

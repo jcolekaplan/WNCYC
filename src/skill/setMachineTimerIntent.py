@@ -22,48 +22,30 @@ def setMachineTimer(intent, session):
         response = table.get_item(Key = {'userId': userId})
         
         if response.get('Item'):
-            buildingId = response.get('Item').get('buildingId')
-            machineType = intent.get('slots').get('machineType').get('value')
-            machineNum = intent.get('slots').get('machineNum').get('value')
+            buildingId = APIBuildingId(response)
+            machineType = APIMachineType(intent)
+            machineNum = APIMachineNum(intent)
             
             """Format number"""
             machineId = buildingId + '-' + machineType + '-' + str(machineNum).zfill(2)
             
             """Call API /buildings/buildingId/machines/machineId"""
-            machineInfo = callApi(
-                url = 'https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings/{}/machines/{}'
-                .format(buildingId, machineId)
-            )
+            machineInfo = APIInfo(buildingId, machineType, False, machineId)
             
-            """If machine exists"""
-            if type(machineInfo) == list:
-                status = machineInfo.get('status')
-                if status == 'available':
-                    speechOutput = 'That {} is available.'.format(machineType)
-                    repromptText = 'That {} is available.'.format(machineType)
+            """If API call successful"""
+            if not machineInfo.get('error'):
+                """And machine is available"""
+                if machineInfo.get('status') == 'available':
+                    speechOutput, repromptText = thatMachineIsAvail(machineType)
+                """And machine is not available"""
                 else:
-                    timeLeft = machineInfo.get('timeLeft')
-                    speechOutput = 'Setting a timer. There are {} minutes remaining.'\
-                                   ' I will let you know when that {} is available'.format(timeLeft, machineType)
-                    repromptText = 'There are {} minutes remaining.'\
-                                   ' I will let you know when that {} is available'.format(timeLeft, machineType)
+                    speechOutput, region_name = settingATimer(machineType, machineInfo.get('timeLeft'))
             else:
-                """Machine not found"""
-                speechOutput = 'I could not find that {}.'\
-                               'You can tell me the {} by saying, is {} number x available.'.format(machineType, machineType, machineType)
-                repromptText = 'You can tell me the {} by saying, is {} number x available.'.format(machineType, machineType) 
-                               
+                speechOutput, repromptText = machineNotFound(machineType)
         else:
-            """No valid building for user in User table"""
-            speechOutput = 'I could not find your building.'\
-                           'You can tell me your building by saying, my building is.'
-            repromptText = 'You can tell me your building by saying, my building is.'
-    
+            speechOutput, repromptText = buildingNotFound()
     else:
-        """No user with that ID found in User table"""
-        speechOutput = 'I am sorry. I do not know what your building is.'\
-                       'You can tell me your building by saying, my building is.'
-        repromptText = 'You can tell me your building by saying, my building is.'
+        speechOutput, repromptText = userNotFound()
 
     return buildResponse(sessionAttributes, buildSpeechletResponse(
         cardTitle, speechOutput, repromptText, shouldEndSession))
