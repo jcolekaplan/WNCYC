@@ -6,13 +6,12 @@ from boto3.dynamodb.conditions import Key, Attr
 dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
 table = dynamodb.Table('Users')
 
-
 def getAvailMachines(intent, session):
-
+    
     cardTitle = intent.get('name')
     sessionAttributes = {}
     shouldEndSession = False
-    
+
     """Get buildingId from User table and machineType from session
        Get available machines using API
        If there are available machines, tell user how many
@@ -23,37 +22,34 @@ def getAvailMachines(intent, session):
         response = table.get_item(Key = {'userId': userId})
         
         if response.get('Item'):
-            buildingId = response.get('Item').get('buildingId')
-            machineType = intent.get('slots').get('machineType').get('value').strip('s')
+            buildingId = APIBuildingId(response)
+            machineType = APIMachineType(intent)
+            numMachinesRequested = APINumMachinesRequested(intent)
+            
+            """API Call /buildings/buildingId/machineType=machineType"""
+            totalMachines = APIInfo(buildingId, machineType, False, "")
+            numTotalMachines = len(totalMachines)
             
             """API Call /buildings/buildingId/machines?=available&machineType=machineType"""
-            machineInfo = callApi(
-                url = 'https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings/{}/machines?status=available&machineType={}'
-                .format(buildingId, machineType)
-            )
-            """If machine exists"""
-            if type(machineInfo) == list:
-                numAvailMachines = len(machineInfo)
-                speechOutput = 'There are {} available {}s in your building right now'.format(str(numAvailMachines), machineType)
-                repromptText = 'There are {} available {}s in your building right now'.format(str(numAvailMachines), machineType)
-            else:
-                speechOutput = 'There are no available {}s in your building right now.'\
-                               'I can let you know when one is available if you say, '\
-                               'let me know when a {} is available.'.format(machineType, machineType)
-                repromptText = 'I can let you know when a {} is available if you say, '\
-                               'let me know when a {} is available.'.format(machineType, machineType) 
-                               
-        else:
-            """No valid building for user in User table"""
-            speechOutput = 'I could not find your building.'\
-                           'You can tell me your building by saying, my building is.'
-            repromptText = 'You can tell me your building by saying, my building is.'
+            machineInfo = APIInfo(buildingId, machineType, True, "")
             
+            numAvailMachines = len(machineInfo)
+            """More machines available than requested"""
+            if type(machineInfo) == list and (numAvailMachines >= numMachinesRequested):
+                speechOutput, repromptText = machinesAvail(numAvailMachines, machineType)
+            """More machines requested than exist in building"""
+            elif numTotalMachines < numMachinesRequested:
+                speechOutput, repromptText = tooManyMachines(numTotalMachines, machineType)
+            """More machines requested than available but some are available"""
+            elif numAvailMachines > 0 and numAvailMachines < numMachinesRequested:
+                speechOutput, repromptText = notEnoughAvail(numAvailMachines, numMachinesRequested, machineType)
+            """No machines available"""
+            else:
+                speechOutput, repromptText = noAvailMachines(machineType)
+        else:
+            speechOutput, repromptText = buildingNotFound()
     else:
-        """No user with that ID found in User table"""
-        speechOutput = 'I am sorry. I do not know what your building is.'\
-                       'You can tell me your building by saying, my building is.'
-        repromptText = 'You can tell me your building by saying, my building is.'
-
+        speechOutput, repromptText = userNotFound()
+        
     return buildResponse(sessionAttributes, buildSpeechletResponse(
         cardTitle, speechOutput, repromptText, shouldEndSession))

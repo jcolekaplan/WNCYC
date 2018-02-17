@@ -17,6 +17,10 @@
         {
           "name": "machineType",
           "type": "machineType"
+        },
+        {
+          "name": "numMachines",
+          "type": "AMAZON.NUMBER"
         }
       ],
       "intent": "getAvailMachines"
@@ -39,6 +43,10 @@
         {
           "name": "machineType",
           "type": "machineType"
+        },
+        {
+          "name": "numMachines",
+          "type": "AMAZON.NUMBER"
         }
       ],
       "intent": "setNextAvailMachineTimer"

@@ -22,52 +22,31 @@ def setNextAvailMachineTimer(intent, session):
         response = table.get_item(Key = {'userId': userId})
         
         if response.get('Item'):
-            buildingId = response.get('Item').get('buildingId')
-            machineType = intent.get('slots').get('machineType').get('value').strip('s')
+            buildingId = APIBuildingId(response)
+            machineType = APIMachineType(intent)
+            numMachinesRequested = APINumMachinesRequested(intent)
             
-            """Call API /buidlings/buildingId/machines?machineType=machineType&status=available"""
-            machineInfo = callApi(
-                url = 'https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings/{}/machines?status=available&machineType={}'
-                .format(buildingId, machineType)
-            )
+            """API Call /buildings/buildingId/machineType=machineType"""
+            totalMachines = APIInfo(buildingId, machineType, False, "")
+            numTotalMachines = len(totalMachines)
             
-            """Get number of available machines
-               If it's non-zero, tell user how many there are
-               If not, offer to set time for next available machine
-            """
+            """API Call /buildings/buildingId/machines?=available&machineType=machineType"""
+            machineInfo = APIInfo(buildingId, machineType, True, "")
+            
             numAvailMachines = len(machineInfo)
-            if numAvailMachines > 0:
-                speechOutput = 'There are {} available {}s in your building right now'.format(str(numAvailMachines), machineType)
-                repromptText = 'There are {} available {}s in your building right now'.format(str(numAvailMachines), machineType)
+            """More available machines than requested machines"""
+            if type(machineInfo) == list and (numAvailMachines >= numMachinesRequested):
+                speechOutput, repromptText = machinesAvail(numAvailMachines, machineType)
+            """More machines requested than exist in the building"""
+            elif numTotalMachines < numMachinesRequested:
+                speechOutput, repromptText = tooManyMachines(numTotalMachines, machineType)
+            """More machines requested than are available"""
             else:
-                """Call API /buidlings/buildingId/machines?machineType=machineType
-                   Find the next available machine
-                """
-                machineInfo = callApi(
-                    url = 'https://go3ba09va5.execute-api.us-east-2.amazonaws.com/Test/buildings/{}/machines?machineType={}'
-                    .format(buildingId, machineType)
-                )
-                lowestTimeLeft = 60
-                for machine in machineInfo:
-                    if 0 < machine.get('timeLeft') <= lowestTimeLeft:
-                        lowestTimeLeft = machine.get('timeLeft')
-                speechOutput = 'Setting a timer for the next available {} ' \
-                               'The next available {} will be free in {} minutes. '\
-                               'I will let you know when it is available.'.format(machineType, machineType, lowestTimeLeft)
-                repromptText = 'The next available {} will be free in {} minutes. '\
-                               'I will let you know when it is available.'.format(machineType, lowestTimeLeft)
-        
+               speechOutput, repromptText = settingMulTimers(numMachinesRequested, machineType, totalMachines)
         else:
-            """No valid building for user in User table"""
-            speechOutput = 'I could not find your building.'\
-                           'You can tell me your building by saying, my building is.'
-            repromptText = 'You can tell me your building by saying, my building is.'
-    
+            speechOutput, repromptText = buildingNotFound()
     else:
-        """No user with that ID found in User table"""
-        speechOutput = 'I am sorry. I do not know what your building is.'\
-                       'You can tell me your building by saying, my building is.'
-        repromptText = 'You can tell me your building by saying, my building is.'
+        speechOutput, repromptText = userNotFound()
 
     return buildResponse(sessionAttributes, buildSpeechletResponse(
         cardTitle, speechOutput, repromptText, shouldEndSession))
