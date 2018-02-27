@@ -1,10 +1,11 @@
 import boto3
 from decEncoder import *
 from boto3.dynamodb.conditions import Key, Attr
+from dynamoTable import *
 
 """Dynamo resource"""
 dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
-buildingTable = dynamodb.Table('Buildings')
+buildingTable = dynamoTable('Buildings')
 
 """Lambda handler function for /buildings/{buildingId} API call
    Returns building with the buildingId specified in the path
@@ -17,7 +18,7 @@ def getBuildingId(event, context):
     """
     if event.get('pathParameters'):
         buildingId = event.get('pathParameters').get('buildingId')
-        response = buildingTable.get_item(Key={'buildingId': buildingId})
+        response = buildingTable.getItem(buildingId, 'buildingId')
         if response.get('Item'):
             return {
                 'statusCode': 200,
@@ -34,7 +35,7 @@ def getBuildingId(event, context):
     else:
         """No path parameters"""	
         return {
-            'statusCode': 400,
-            'headers': {'Content-Type': 'application/json'},
-            'body': json.dumps({'error': 'Path not found'})
-        }
+		    'statusCode': 400,
+		    'headers': {'Content-Type': 'application/json'},
+		    'body': json.dumps({'error': 'Path not found'})
+	    }

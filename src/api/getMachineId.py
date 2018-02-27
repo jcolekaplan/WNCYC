@@ -1,10 +1,10 @@
 import boto3
 from decEncoder import *
 from boto3.dynamodb.conditions import Key, Attr
+from dynamoTable import *
 
 """Dynamo resource"""
-dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
-machineTable = dynamodb.Table('Machines')
+machineTable = dynamoTable('Machines')
 
 """Lambda handler function for /buildings/{buildingId}/machines/{machineId} API call
    Returns machine with the machineId specified in the path
@@ -20,7 +20,7 @@ def getMachineId(event, context):
     if event.get('pathParameters'):
         buildingId = event.get('pathParameters').get('buildingId')
         machineId = event.get('pathParameters').get('machineId')
-        response = machineTable.get_item(Key={'machineId': machineId})
+        response = machineTable.getItem(machineId, 'machineId')
         if response.get('Item'):
             if response.get('Item').get('buildingId')==buildingId:
                 return {

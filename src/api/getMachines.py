@@ -1,10 +1,10 @@
 import boto3
 from decEncoder import *
 from boto3.dynamodb.conditions import Key, Attr
+from dynamoTable import *
 
 """Scan dynamo table"""
-dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
-machineTable = dynamodb.Table('Machines')
+machineTable = dynamoTable('Machines')
 
 """Lambda handler function for /buildings/{buildingId}/machines API call
    Returns all the machines in a given building
@@ -23,7 +23,7 @@ def getMachines(event, context):
 	            if key in acceptedFilters:
 	                filterExpression = filterExpression & Attr(key).eq(event.get('queryStringParameters').get(key))
 	    
-        response = machineTable.scan(FilterExpression=filterExpression)
+        response = machineTable.scanFilter(filterExpression)
         if response.get('Items'):
             return {
                 'statusCode': 200,
