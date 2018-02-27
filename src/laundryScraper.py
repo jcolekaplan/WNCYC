@@ -7,6 +7,7 @@ from bs4 import BeautifulSoup
 from machine import *
 from building import *
 from buildingsInfo import *
+from dynamoTable import *
 
 """Scrape LaundryView for each building and all machines in each building
    Put all the info into Building and Machine objects
@@ -50,7 +51,6 @@ def scrapeLaundry(event, context):
         countMachineNotFound = 0
         for row in table:
             if row.find('td', 'bgicon'):
-                machineTypeFound = True
                 findMachineType = row.find(alt={'inuse', 'available'})
                 if str(findMachineType).find('washer') != -1:
                     machineType = 'washer'
@@ -58,7 +58,6 @@ def scrapeLaundry(event, context):
                     machineType = 'dryer'
                 
             if row.find('td', 'bgdesc'):
-                machineNumFound = True
                 machineNum = row.find('div','desc').get_text().strip()
                 
                 if machineNum == '':
@@ -67,14 +66,15 @@ def scrapeLaundry(event, context):
                 
                 
             if row.find('div', 'runtime'):
-                statusFound = True
                 runTime = row.find('div', 'runtime').get_text().strip()
                 if runTime.find('remaining') != -1:
                     runTimeInt = [int(s) for s in runTime.split() if s.isdigit()][0]
                 elif runTime.find('out of service') != -1:
                     runTimeInt = -1
                 elif runTime.find('unknown') != -1:
-                    runTimeInt = -2
+                    runTimeInt = -1
+                elif runTime.find('closed') != -1:
+                    runTimeInt = -1
                 else:
                     runTimeInt = 0
             
@@ -115,9 +115,9 @@ def scrapeLaundry(event, context):
 """
 def writeDynamo(buildingList, machineDict):
     """Client with access keys to write to Dynamo tables online"""
-    dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
-    buildingTable = dynamodb.Table('Buildings')
-    machineTable = dynamodb.Table('Machines')
+    
+    buildingTable = dynamoTable('Buildings')
+    machineTable = dynamoTable('Machines')
     
     """Go through each building, convert it to dictionary, and put in relevant info in    
        Dynamo format
@@ -125,11 +125,11 @@ def writeDynamo(buildingList, machineDict):
        Then, write buildingTable and machineTable to Dynamo table
     """
     for building in buildingList:
-        buildingTable.put_item(Item=vars(building))
-        
+        buildingTable.putItem(building)
+
         for machine in machineDict[building.buildingId]:
-            if machine.timeLeft != -2:
-                machineTable.put_item(Item=vars(machine))
+            if machine.timeLeft != -1:
+                machineTable.putItem(machine)
 
 if __name__ == '__main__':
     scrapeLaundry(None,None)
