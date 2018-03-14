@@ -7,13 +7,20 @@ from bs4 import BeautifulSoup
 from machine import *
 from building import *
 from buildingsInfo import *
-from dynamoTable import *
+from DynamoTable import *
 
+
+def handler(event, context):
+    """Client with access keys to write to Dynamo tables online"""
+    buildingTable = DynamoTable('Buildings')
+    machineTable = DynamoTable('Machines')
+    return scrapeLaundry(event, context, buildingTable, machineTable)
+    
 """Scrape LaundryView for each building and all machines in each building
    Put all the info into Building and Machine objects
    Put all those objects into buildingList and machineDict
 """   
-def scrapeLaundry(event, context):
+def scrapeLaundry(event, context, buildingTable, machineTable):
     
     """Used to store Building and Machine objects with all the relevant info"""
     buildingList = list()
@@ -108,17 +115,13 @@ def scrapeLaundry(event, context):
         buildingList.append(Building(buildingId, buildingInfo['friendlyNames'], numWashers, numDryers))
         
     """Call writeDynamo to re-format buildingList and machineDict and write to Dynamo table"""
-    writeDynamo(buildingList, machineDict)
+    writeDynamo(buildingList, machineDict, buildingTable, machineTable)
     
 """Iterate through buildingList and machineDict
    Convert to dynamo format and write info to table
 """
-def writeDynamo(buildingList, machineDict):
-    """Client with access keys to write to Dynamo tables online"""
-    
-    buildingTable = dynamoTable('Buildings')
-    machineTable = dynamoTable('Machines')
-    
+def writeDynamo(buildingList, machineDict, buildingTable, machineTable):
+
     """Go through each building, convert it to dictionary, and put in relevant info in    
        Dynamo format
        Go through the machines for each of those buildings, do the same
@@ -130,6 +133,3 @@ def writeDynamo(buildingList, machineDict):
         for machine in machineDict[building.buildingId]:
             if machine.timeLeft != -1:
                 machineTable.putItem(machine)
-
-if __name__ == '__main__':
-    scrapeLaundry(None,None)
