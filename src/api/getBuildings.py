@@ -1,21 +1,20 @@
 import boto3
 from decEncoder import *
 from fuzzywuzzy import fuzz
-from dynamoTable import *
+from DynamoTable import *
 
-"""Scan dynamo table"""
-#dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
-#buildingTable = dynamodb.Table('Buildings')
-buildingTable = dynamoTable('Buildings')
+def handler(event, context):
+    """Scan dynamo table"""
+    buildingTable = DynamoTable('Buildings')
+    return getBuildings(event, buildingTable)
 
 """Lambda handler function for /buildings API call
    Returns all the buildings if no friendlyName specified
    or just the one building containing the friendlyName
    or 'Building not found' error if friendlyName not in any list
 """
-def getBuildings(event, context):
+def getBuildings(event, buildingTable):
     """Scan table"""
-    #response = buildingTable.scan()
     response = buildingTable.scanTable()
     """If friendlyName specified, assign it to variable,
        iterate through all the items in scanned dynamo table until finding it

@@ -1,10 +1,11 @@
 import boto3
 from decEncoder import *
-from boto3.dynamodb.conditions import Key, Attr
-from dynamoTable import *
+from DynamoTable import *
 
-"""Dynamo resource"""
-machineTable = dynamoTable('Machines')
+def handler(event, context):
+    """Dynamo resource"""
+    machineTable = DynamoTable('Machines')
+    return getMachineId(event, machineTable)
 
 """Lambda handler function for /buildings/{buildingId}/machines/{machineId} API call
    Returns machine with the machineId specified in the path
@@ -12,15 +13,15 @@ machineTable = dynamoTable('Machines')
    or 'Machine not found' error if machineId not found by get_item search
    or 'No path parameters' if there are no path parameters
 """
-def getMachineId(event, context):
+def getMachineId(event, machineTable):
     """If machineId specified, assign it to variable,
        use get_item to find it in machine table
        put it in JSON format and return
     """
     if event.get('pathParameters'):
         buildingId = event.get('pathParameters').get('buildingId')
-        machineId = event.get('pathParameters').get('machineId')
-        response = machineTable.getItem(machineId, 'machineId')
+        machineIdVal = event.get('pathParameters').get('machineId')
+        response = machineTable.getItem(machineId=machineIdVal)
         if response.get('Item'):
             if response.get('Item').get('buildingId')==buildingId:
                 return {

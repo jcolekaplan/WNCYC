@@ -1,10 +1,11 @@
 import boto3
 from decEncoder import *
-from boto3.dynamodb.conditions import Key, Attr
-from dynamoTable import *
+from DynamoTable import *
 
-"""Scan dynamo table"""
-machineTable = dynamoTable('Machines')
+def handler(event, context):
+    """Scan dynamo table"""
+    machineTable = DynamoTable('Machines')
+    return getMachines(event, machineTable)
 
 """Lambda handler function for /buildings/{buildingId}/machines API call
    Returns all the machines in a given building
@@ -12,7 +13,7 @@ machineTable = dynamoTable('Machines')
    or 'Building or machine not found' error if no machines are returned matching criteria
    or 'No path parameters' if there are no path parameters
 """
-def getMachines(event, context):
+def getMachines(event, machineTable):
     if event.get('pathParameters'):
         buildingId = event.get('pathParameters').get('buildingId')
         filterExpression=Attr('buildingId').eq(buildingId)
