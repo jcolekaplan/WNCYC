@@ -35,7 +35,7 @@ def getBuildingId(event, buildingTable):
     else:
         """No path parameters"""	
         return {
-		    'statusCode': 400,
-		    'headers': {'Content-Type': 'application/json'},
-		    'body': json.dumps({'error': 'Path not found'})
-	    }
+	    'statusCode': 400,
+            'headers': {'Content-Type': 'application/json'},
+	    'body': json.dumps({'error': 'Path not found'})
+	}
