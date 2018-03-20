@@ -15,7 +15,7 @@ def handler(event, context):
 """
 def getBuildings(event, buildingTable):
     """Scan table"""
-    response = buildingTable.scanTable()
+    response = buildingTable.scan()
     """If friendlyName specified, assign it to variable,
        iterate through all the items in scanned dynamo table until finding it
        put it in JSON format and return

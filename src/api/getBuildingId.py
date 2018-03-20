@@ -18,7 +18,7 @@ def getBuildingId(event, buildingTable):
     """
     if event.get('pathParameters'):
         buildingIdVal = event.get('pathParameters').get('buildingId')
-        response = buildingTable.getItem(buildingId=buildingIdVal)
+        response = buildingTable.get(buildingId=buildingIdVal)
         if response.get('Item'):
             return {
                 'statusCode': 200,

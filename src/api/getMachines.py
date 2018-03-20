@@ -24,7 +24,7 @@ def getMachines(event, machineTable):
 	            if key in acceptedFilters:
 	                filterExpression = filterExpression & Attr(key).eq(event.get('queryStringParameters').get(key))
 	    
-        response = machineTable.scanFilter(filterExpression)
+        response = machineTable.scanf(filterExpression)
         if response.get('Items'):
             return {
                 'statusCode': 200,

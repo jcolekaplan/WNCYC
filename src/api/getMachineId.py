@@ -21,7 +21,7 @@ def getMachineId(event, machineTable):
     if event.get('pathParameters'):
         buildingId = event.get('pathParameters').get('buildingId')
         machineIdVal = event.get('pathParameters').get('machineId')
-        response = machineTable.getItem(machineId=machineIdVal)
+        response = machineTable.get(machineId=machineIdVal)
         if response.get('Item'):
             if response.get('Item').get('buildingId')==buildingId:
                 return {
