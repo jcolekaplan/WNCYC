@@ -7,12 +7,20 @@ from bs4 import BeautifulSoup
 from machine import *
 from building import *
 from buildingsInfo import *
+from DynamoTable import *
 
+
+def handler(event, context):
+    """Client with access keys to write to Dynamo tables online"""
+    buildingTable = DynamoTable('Buildings')
+    machineTable = DynamoTable('Machines')
+    return scrapeLaundry(event, context, buildingTable, machineTable)
+    
 """Scrape LaundryView for each building and all machines in each building
    Put all the info into Building and Machine objects
    Put all those objects into buildingList and machineDict
 """   
-def scrapeLaundry(event, context):
+def scrapeLaundry(event, context, buildingTable, machineTable):
     
     """Used to store Building and Machine objects with all the relevant info"""
     buildingList = list()
@@ -50,7 +58,6 @@ def scrapeLaundry(event, context):
         countMachineNotFound = 0
         for row in table:
             if row.find('td', 'bgicon'):
-                machineTypeFound = True
                 findMachineType = row.find(alt={'inuse', 'available'})
                 if str(findMachineType).find('washer') != -1:
                     machineType = 'washer'
@@ -58,7 +65,6 @@ def scrapeLaundry(event, context):
                     machineType = 'dryer'
                 
             if row.find('td', 'bgdesc'):
-                machineNumFound = True
                 machineNum = row.find('div','desc').get_text().strip()
                 
                 if machineNum == '':
@@ -67,14 +73,15 @@ def scrapeLaundry(event, context):
                 
                 
             if row.find('div', 'runtime'):
-                statusFound = True
                 runTime = row.find('div', 'runtime').get_text().strip()
                 if runTime.find('remaining') != -1:
                     runTimeInt = [int(s) for s in runTime.split() if s.isdigit()][0]
                 elif runTime.find('out of service') != -1:
                     runTimeInt = -1
                 elif runTime.find('unknown') != -1:
-                    runTimeInt = -2
+                    runTimeInt = -1
+                elif runTime.find('closed') != -1:
+                    runTimeInt = -1
                 else:
                     runTimeInt = 0
             
@@ -108,28 +115,21 @@ def scrapeLaundry(event, context):
         buildingList.append(Building(buildingId, buildingInfo['friendlyNames'], numWashers, numDryers))
         
     """Call writeDynamo to re-format buildingList and machineDict and write to Dynamo table"""
-    writeDynamo(buildingList, machineDict)
+    writeDynamo(buildingList, machineDict, buildingTable, machineTable)
     
 """Iterate through buildingList and machineDict
    Convert to dynamo format and write info to table
 """
-def writeDynamo(buildingList, machineDict):
-    """Client with access keys to write to Dynamo tables online"""
-    dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
-    buildingTable = dynamodb.Table('Buildings')
-    machineTable = dynamodb.Table('Machines')
-    
+def writeDynamo(buildingList, machineDict, buildingTable, machineTable):
+
     """Go through each building, convert it to dictionary, and put in relevant info in    
        Dynamo format
        Go through the machines for each of those buildings, do the same
        Then, write buildingTable and machineTable to Dynamo table
     """
     for building in buildingList:
-        buildingTable.put_item(Item=vars(building))
-        
-        for machine in machineDict[building.buildingId]:
-            if machine.timeLeft != -2:
-                machineTable.put_item(Item=vars(machine))
+        buildingTable.putItem(building)
 
-if __name__ == '__main__':
-    scrapeLaundry(None,None)
+        for machine in machineDict[building.buildingId]:
+            if machine.timeLeft != -1:
+                machineTable.putItem(machine)

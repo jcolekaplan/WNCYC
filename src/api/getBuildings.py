@@ -1,16 +1,19 @@
 import boto3
 from decEncoder import *
+from fuzzywuzzy import fuzz
+from DynamoTable import *
 
-"""Scan dynamo table"""
-dynamodb = boto3.resource('dynamodb', region_name = 'us-east-2')
-buildingTable = dynamodb.Table('Buildings')
+def handler(event, context):
+    """Scan dynamo table"""
+    buildingTable = DynamoTable('Buildings')
+    return getBuildings(event, buildingTable)
 
 """Lambda handler function for /buildings API call
    Returns all the buildings if no friendlyName specified
    or just the one building containing the friendlyName
    or 'Building not found' error if friendlyName not in any list
 """
-def getBuildings(event, context):
+def getBuildings(event, buildingTable):
     """Scan table"""
     response = buildingTable.scan()
     """If friendlyName specified, assign it to variable,
@@ -20,13 +23,14 @@ def getBuildings(event, context):
     if event.get('queryStringParameters'):
         friendlyName = event.get('queryStringParameters').get('friendlyName')
         for building in response.get('Items'):
-            if friendlyName.lower() in building.get('nameList'):
-                """Found friendlyName"""
-                return {
-                    'statusCode': 200,
-                    'headers': {'Content-Type': 'application/json'},
-                    'body': json.dumps(building, cls=DecimalEncoder)
-                }
+            for name in building.get('nameList'):
+                if fuzz.ratio(friendlyName.lower(), name) > 90 or friendlyName in building.get('nameList'):
+                    """Found friendlyName"""
+                    return {
+                        'statusCode': 200,
+                        'headers': {'Content-Type': 'application/json'},
+                        'body': json.dumps(building, cls=DecimalEncoder)
+                    }
         """friendlyName does not match any building"""
         return {
             'statusCode': 404,
