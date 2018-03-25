@@ -1,8 +1,7 @@
 import sys
 import pytest
 
-sys.path.append('c:/Users/Darth/Dropbox/RPI/WNCYC/src')
-from main.building import *
+from ..main.building import *
 
 class TestBuilding:
     
