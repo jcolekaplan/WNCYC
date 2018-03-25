@@ -1,0 +1,68 @@
+{
+  "intents": [
+    {
+      "slots": [
+        {
+          "name": "building",
+          "type": "building"
+        }
+      ],
+      "intent": "setBuilding"
+    },
+    {
+      "intent": "getBuilding"
+    },
+    {
+      "slots": [
+        {
+          "name": "machineType",
+          "type": "machineType"
+        },
+        {
+          "name": "numMachines",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "getAvailMachines"
+    },
+    {
+      "slots": [
+        {
+          "name": "machineNum",
+          "type": "machineNum"
+        },
+        {
+          "name": "machineType",
+          "type": "machineType"
+        }
+      ],
+      "intent": "isMachineAvail"
+    },
+    {
+      "slots": [
+        {
+          "name": "machineType",
+          "type": "machineType"
+        },
+        {
+          "name": "numMachines",
+          "type": "AMAZON.NUMBER"
+        }
+      ],
+      "intent": "setNextAvailMachineTimer"
+    },
+    {
+      "slots": [
+        {
+          "name": "machineType",
+          "type": "machineType"
+        },
+        {
+          "name": "machineNum",
+          "type": "machineNum"
+        }
+      ],
+      "intent": "setMachineTimer"
+    }
+  ]
+}

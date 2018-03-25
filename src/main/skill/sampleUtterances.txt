@@ -1,0 +1,28 @@
+setBuilding My building is {building}
+setBuilding My building is {building} {building}
+setBuilding My building is {building} {building} {building}
+getBuilding What is my building
+getAvailMachines Are any {machineType} available
+getAvailMachines Are there any {machineType} available
+getAvailMachines Are any {machineType} free
+getAvailMachines Are there any {machineType} free
+getAvailMachines Are any {machineType} open
+getAvailMachines Are there any {machineType} open
+getAvailMachines Are {numMachines} {machineType} available
+getAvailMachines Are there {numMachines} {machineType} available
+getAvailMachines Are {numMachines} {machineType} free
+getAvailMachines Are there {numMachines} {machineType} free
+getAvailMachines Are {numMachines} {machineType} open
+getAvailMachines Are there {numMachines} {machineType} open
+isMachineAvail Is {machineType} number {machineNum} available
+isMachineAvail Is {machineType} {machineNum} available
+isMachineAvail Is {machineType} number {machineNum} free
+isMachineAvail Is {machineType} {machineNum} free
+isMachineAvail Is {machineType} number {machineNum} open
+isMachineAvail Is {machineType} {machineNum} open
+setNextAvailMachineTimer Set a timer for next available {machineType}
+setNextAvailMachineTimer Set a timer for the next available {machineType}
+setNextAvailMachineTimer Let me know when {numMachines} {machineType} is available.
+setNextAvailMachineTimer Let me know when {numMachines} {machineType} are available.
+setMachineTimer Set a timer for {machineType} number {machineNum}
+setMachineTimer Set a timer for {machineType} {machineNum}
