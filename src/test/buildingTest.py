@@ -32,7 +32,7 @@ class TestBuilding:
     def test_noneBuildingId(self):
         with pytest.raises(ValueError):
             noneBuilding = Building(None, ["colvin", "colvin apartments"], 6, 6)
-            
+    
     def test_noneBuildingNames(self):
         with pytest.raises(ValueError):
             noneBuilding = Building("colvin-1-floor", None, 6, 6)
@@ -40,7 +40,8 @@ class TestBuilding:
     def test_noneBuildingWasher(self):
         with pytest.raises(ValueError):
             noneBuilding = Building("colvin-1-floor", ["colvin", "colvin apartments"], None, 6)
-                def test_noneBuildingDryer(self):
+            
+    def test_noneBuildingDryer(self):
         with pytest.raises(ValueError):
             noneBuilding = Building("colvin-1-floor", ["colvin", "colvin apartments"], 6, None)
     
