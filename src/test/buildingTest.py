@@ -59,5 +59,3 @@ class TestBuilding:
     def test_nonIntDryers(self):
         with pytest.raises(ValueError):
             noneBuilding = Building("colvin-1-floor", ["colvin", "colvin apartments"], 6, '6')
-    
-pytest.main(["buildingTest.py"])
