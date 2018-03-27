@@ -33,8 +33,20 @@ class Building(object):
 		if numWashers is None:
 			raise ValueError("Invalid value for 'numWashers', must not be 'None'")
 		
+		if type(numWashers) is not int:
+			raise ValueError("Invalid value for 'numWashers', must be an integer")		
+		
+		if numWashers < 0:
+			raise ValueError("Invalid value for 'numWashers', must not be negative")				
+			
 		if numDryers is None:
 			raise ValueError("Invalid value for 'numDryers', must not be'None'")
+		
+		if type(numDryers) is not int:
+			raise ValueError("Invalid value for 'numDryers', must be an integer")
+		
+		if numDryers < 0:
+			raise ValueError("Invalid value for 'numDryers', must not be negative")
 		
 		self.buildingId = buildingId
 		self.nameList = nameList
