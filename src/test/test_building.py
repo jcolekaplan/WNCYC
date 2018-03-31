@@ -4,7 +4,7 @@ from ..main.building import *
 
 class TestBuilding:
     
-    # Building tests ==================================================
+    # Building tests =========================================================
     @pytest.yield_fixture(autouse=True)    
     def new_building(self):
         newBuilding = Building("colvin-1-floor", ["colvin", "colvin apartment"], 6, 6)
@@ -24,7 +24,7 @@ class TestBuilding:
     def test_numDryers(self, new_building):
         assert new_building.numDryers == 6
     
-    # ValueError tests ==================================================
+    # ValueError tests =========================================================
     def test_noneBuilding(self):
         with pytest.raises(ValueError):
             noneBuilding = Building(None, None, None, None)

@@ -1,5 +1,5 @@
 class Machine(object):
-    
+  
     def __init__(self, status, machineId, buildingId, machineType, timeLeft):
         """Class instantiation
         
