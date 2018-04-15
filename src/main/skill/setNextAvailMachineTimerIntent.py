@@ -8,9 +8,6 @@ def setNextAvailMachineTimer(intent, session):
     userTable = DynamoTable('Users')
     return buildNextAvailMachineResponse(intent, session, userTable)
     
-#dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-#table = dynamodb.Table('Users')
-
 def buildNextAvailMachineResponse(intent, session, userTable):
 
     cardTitle = intent.get('name')
@@ -24,7 +21,6 @@ def buildNextAvailMachineResponse(intent, session, userTable):
     """
     if session.get('user'):
         userIdVal = session.get('user').get('userId')
-        #response = table.get_item(Key = {'userId': userId})
         response = userTable.get(userId=userIdVal)
         
         if response.get('Item'):
