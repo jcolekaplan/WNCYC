@@ -1,12 +1,17 @@
 import boto3
 from utils import *
+from dynamoTable import *
 from boto3.dynamodb.conditions import Key, Attr
 
-"""Dynamo resource and table"""
-dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-table = dynamodb.Table('Users')
-
 def setNextAvailMachineTimer(intent, session):
+    """Dynamo resource and table"""
+    userTable = DynamoTable('Users')
+    return buildNextAvailMachineResponse(intent, session, userTable)
+    
+#dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
+#table = dynamodb.Table('Users')
+
+def buildNextAvailMachineResponse(intent, session, userTable):
 
     cardTitle = intent.get('name')
     sessionAttributes = {}
@@ -18,8 +23,9 @@ def setNextAvailMachineTimer(intent, session):
        If not, set a timer for the next machine to become available
     """
     if session.get('user'):
-        userId = session.get('user').get('userId')
-        response = table.get_item(Key = {'userId': userId})
+        userIdVal = session.get('user').get('userId')
+        #response = table.get_item(Key = {'userId': userId})
+        response = userTable.get(userId=userIdVal)
         
         if response.get('Item'):
             buildingId = APIBuildingId(response)
@@ -37,10 +43,8 @@ def setNextAvailMachineTimer(intent, session):
             """More available machines than requested machines"""
             if type(machineInfo) == list and (numAvailMachines >= numMachinesRequested):
                 speechOutput, repromptText = machinesAvail(numAvailMachines, machineType)
-            """More machines requested than exist in the building"""
             elif numTotalMachines < numMachinesRequested:
                 speechOutput, repromptText = tooManyMachines(numTotalMachines, machineType)
-            """More machines requested than are available"""
             else:
                speechOutput, repromptText = settingMulTimers(numMachinesRequested, machineType, totalMachines)
         else:

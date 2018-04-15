@@ -1,14 +1,17 @@
 import boto3
 from utils import *
+from dynamoTable import *
+from user import *
 
-"""Dynamo resource and table"""
-dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-table = dynamodb.Table('Users')
-
+def setBuildingInSession(intent, session):
+    """Dynamo resource and table"""
+    userTable = DynamoTable('Users')
+    return buildSetBuildingResponse(intent, session, userTable)
+    
 def createBuildingAttributes(building):
     return {'building': building}
 
-def setBuildingInSession(intent, session):
+def buildSetBuildingResponse(intent, session, userTable):
     """ Sets the building in the session and prepares the speech to reply to the user.
         Writes user ID to User table
     """
@@ -23,12 +26,12 @@ def setBuildingInSession(intent, session):
         """Calls API /buildings?friendlyName=building to find valid buildingId"""
         findBuilding = APIFindBuilding(building)
         if findBuilding.get('buildingId'):
-            userInfo = {
-                'userId' : session.get('user').get('userId'),
-                'buildingId' : findBuilding.get('buildingId'),
-                'buildingName': building
-            }
-            table.put_item(Item=userInfo)
+
+            userId = session.get('user').get('userId')
+            buildingId = findBuilding.get('buildingId')
+            newUser = User(userId, building, buildingId)
+            userTable.put(newUser)
+            
             speechOutput, repromptText = yourBuildingIs(building)
 
         else:

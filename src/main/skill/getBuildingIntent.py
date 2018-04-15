@@ -1,12 +1,14 @@
 import boto3
 from utils import *
+from dynamoTable import *
 from boto3.dynamodb.conditions import Key, Attr
 
-"""Dynamo resource and table"""
-dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-table = dynamodb.Table('Users')
-
 def getBuildingFromSession(intent, session):
+    """Dynamo resource and table"""
+    userTable = DynamoTable('Users')
+    return buildBuildingFromSessionResponse(intent, session, userTable)
+
+def buildBuildingFromSessionResponse(intent, session, userTable):
 
     cardTitle = intent.get('name')
     sessionAttributes = {}
@@ -14,14 +16,13 @@ def getBuildingFromSession(intent, session):
     
     """Get building from User table"""
     if session.get('user'):
-        userId = session.get('user').get('userId')
-        response = table.get_item(Key = {'userId': userId})
+        userIdVal = session.get('user').get('userId')
+        response = userTable.get(userId=userIdVal)
         building = response.get('Item').get('buildingName')
         
         """Tell user their building"""
         if response.get('Item'):
             speechOutput, repromptText = yourBuildingIs(building)
-        """Building not found"""
         else:
             speechOutput, repromptText = buildingNotFound()
     else:
