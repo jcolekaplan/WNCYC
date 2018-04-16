@@ -1,12 +1,14 @@
 import boto3
 from utils import *
+from dynamoTable import *
 from boto3.dynamodb.conditions import Key, Attr
 
-"""Dynamo resource and table"""
-dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-table = dynamodb.Table('Users')
-
 def setMachineTimer(intent, session):
+    """Dynamo resource and table"""
+    userTable = DynamoTable('Users')
+    return buildSetMachineTimerResponse(intent, session, userTable)
+
+def buildSetMachineTimerResponse(intent, session, userTable):
 
     cardTitle = intent.get('name')
     sessionAttributes = {}
@@ -18,8 +20,8 @@ def setMachineTimer(intent, session):
        If not, set a timer
     """
     if session.get('user'):
-        userId = session.get('user').get('userId')
-        response = table.get_item(Key = {'userId': userId})
+        userIdVal = session.get('user').get('userId')
+        response = userTable.get(userId=userIdVal)
         
         if response.get('Item'):
             buildingId = APIBuildingId(response)
@@ -37,7 +39,6 @@ def setMachineTimer(intent, session):
                 """And machine is available"""
                 if machineInfo.get('status') == 'available':
                     speechOutput, repromptText = thatMachineIsAvail(machineType)
-                """And machine is not available"""
                 else:
                     speechOutput, region_name = settingATimer(machineType, machineInfo.get('timeLeft'))
             else:

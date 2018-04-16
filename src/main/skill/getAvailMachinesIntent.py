@@ -1,12 +1,14 @@
 import boto3
 from utils import *
+from dynamoTable import *
 from boto3.dynamodb.conditions import Key, Attr
 
-"""Dynamo resource and table"""
-dynamodb = boto3.resource('dynamodb', region_name='us-east-2')
-table = dynamodb.Table('Users')
-
 def getAvailMachines(intent, session):
+    """Dynamo resource"""
+    userTable = DynamoTable('Users')
+    return buildAvailMachinesResponse(intent, session, userTable)
+    
+def buildAvailMachinesResponse(intent, session, userTable):
     
     cardTitle = intent.get('name')
     sessionAttributes = {}
@@ -18,8 +20,8 @@ def getAvailMachines(intent, session):
        If not, offer to set a timer
     """
     if session.get('user'):
-        userId = session.get('user').get('userId')
-        response = table.get_item(Key = {'userId': userId})
+        userIdVal = session.get('user').get('userId')
+        response = userTable.get(userId=userIdVal)
         
         if response.get('Item'):
             buildingId = APIBuildingId(response)
@@ -37,13 +39,10 @@ def getAvailMachines(intent, session):
             """More machines available than requested"""
             if type(machineInfo) == list and (numAvailMachines >= numMachinesRequested):
                 speechOutput, repromptText = machinesAvail(numAvailMachines, machineType)
-            """More machines requested than exist in building"""
             elif numTotalMachines < numMachinesRequested:
                 speechOutput, repromptText = tooManyMachines(numTotalMachines, machineType)
-            """More machines requested than available but some are available"""
             elif numAvailMachines > 0 and numAvailMachines < numMachinesRequested:
                 speechOutput, repromptText = notEnoughAvail(numAvailMachines, numMachinesRequested, machineType)
-            """No machines available"""
             else:
                 speechOutput, repromptText = noAvailMachines(machineType)
         else:
