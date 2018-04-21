@@ -15,7 +15,7 @@ class TestDynamoTable:
         
         newUser = User('userId1', 'userBuilding', 'userBuildingID1')
         userTable.put(newUser)
-        userTable.table.put_item.assert_called_once_with(Item=(newUser))
+        userTable.table.put_item.assert_called_once_with(Item=vars(newUser))
 
     @patch('boto3.resource')
     def test_UserGet(self, mock_boto3):
@@ -63,7 +63,7 @@ class TestDynamoTable:
         
         newMachine = Machine("available", "colvin-1-floor-washer-02", "colvin-1-floor", "washer", 0)
         machineTable.put(newMachine)
-        machineTable.table.put_item.assert_called_once_with(Item=(newMachine))
+        machineTable.table.put_item.assert_called_once_with(Item=vars(newMachine))
 
     @patch('boto3.resource')
     def test_MachineGet(self, mock_boto3):
@@ -113,7 +113,7 @@ class TestDynamoTable:
         
         newBuilding = Building("colvin-1-floor", ["colvin", "colvin apartment"], 6, 6)
         buildingTable.put(newBuilding)
-        buildingTable.table.put_item.assert_called_once_with(Item=(newBuilding))
+        buildingTable.table.put_item.assert_called_once_with(Item=vars(newBuilding))
 
     @patch('boto3.resource')
     def test_BuildingGet(self, mock_boto3):
@@ -164,4 +164,4 @@ class TestDynamoTable:
     def test_InvalidKwargs(self, mock_boto3):
         buildingTable = DynamoTable('Buildings')
         with pytest.raises(ValueError):
-            out = buildingTable.get(buildingId='colvin-1-floor', buildingId2='davison-hall-floor')            
+            out = buildingTable.get(buildingId='colvin-1-floor', buildingId2='davison-hall-floor')
